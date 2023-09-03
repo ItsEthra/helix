@@ -238,7 +238,7 @@ pub struct Picker<T: 'static + Send + Sync, D: 'static> {
     file_fn: Option<FileCallback<T>>,
 }
 
-impl<T: 'static + Send + Sync, D: 'static> Picker<T, D> {
+impl<T: 'static + Send + Sync, D: Send + Sync + 'static> Picker<T, D> {
     pub fn stream(columns: Vec<Column<T, D>>, editor_data: D) -> (Nucleo<T>, Injector<T, D>) {
         let matcher_columns = columns.iter().filter(|col| col.filter).count() as u32;
         assert!(matcher_columns > 0);
@@ -559,7 +559,7 @@ impl<T: 'static + Send + Sync, D: 'static> Picker<T, D> {
                         let picker = match compositor.find::<Overlay<Self>>() {
                             Some(Overlay { content, .. }) => Some(content),
                             None => compositor
-                                .find::<Overlay<DynamicPicker<T>>>()
+                                .find::<Overlay<DynamicPicker<T, D>>>()
                                 .map(|overlay| &mut overlay.content.file_picker),
                         };
                         let Some(picker) = picker else {
