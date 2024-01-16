@@ -1209,7 +1209,7 @@ mod test {
 
     #[test]
     fn parse_query_test() {
-        let columns = &["primary", "field1", "field2"];
+        let columns = &["primary", "field1", "field2", "another", "anode"];
         let primary_column = 0;
 
         // Basic field splitting
@@ -1266,6 +1266,40 @@ mod test {
             hashmap!(
                 "primary" => "hello".to_string(),
                 "field1" => "a\"b".to_string(),
+            )
+        );
+
+        // Prefix
+        assert_eq!(
+            // hello %fie:abc
+            parse_query(columns, primary_column, "hello %anot:abc"),
+            hashmap!(
+                "primary" => "hello".to_string(),
+                "another" => "abc".to_string(),
+            )
+        );
+        assert_eq!(
+            // hello %ano:abc
+            parse_query(columns, primary_column, "hello %ano:abc"),
+            hashmap!(
+                "primary" => "hello".to_string(),
+                "anode" => "abc".to_string()
+            )
+        );
+        assert_eq!(
+            // hello %field1:abc %fie:abc
+            parse_query(columns, primary_column, "hello %field1:xyz %fie:abc"),
+            hashmap!(
+                "primary" => "hello".to_string(),
+                "field1" => "xyz abc".to_string()
+            )
+        );
+        assert_eq!(
+            // hello %fie:abc
+            parse_query(columns, primary_column, "hello %fie:abc"),
+            hashmap!(
+                "primary" => "hello".to_string(),
+                "field1" => "abc".to_string()
             )
         );
     }
