@@ -1105,12 +1105,20 @@ fn parse_query(
             '%' => in_field = true,
             ' ' => (),
             ':' if in_field => {
-                field = column_names
+                // Go over all columns and their indices, find all that starts with field key,
+                // select a column that fits key the most.
+
+                if let Some((pos, col, x)) = column_names
                     .iter()
-                    .position(|name| name == &text)
-                    .map(|idx| column_names[idx]);
-                text.clear();
-                in_field = false;
+                    .enumerate()
+                    .filter_map(|(idx, col)| col.starts_with(&text).then(|| (idx, col, col.len())))
+                    // select "fittest" column
+                    .min_by_key(|tup| tup.2)
+                {
+                    field = Some(column_names[pos]);
+                    text.clear();
+                    in_field = false;
+                }
             }
             _ => text.push(ch),
         }
