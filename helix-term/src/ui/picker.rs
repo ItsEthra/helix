@@ -1108,14 +1108,13 @@ fn parse_query(
                 // Go over all columns and their indices, find all that starts with field key,
                 // select a column that fits key the most.
 
-                if let Some((pos, col, x)) = column_names
+                if let Some(col) = column_names
                     .iter()
-                    .enumerate()
-                    .filter_map(|(idx, col)| col.starts_with(&text).then(|| (idx, col, col.len())))
+                    .filter(|col| col.starts_with(&text))
                     // select "fittest" column
-                    .min_by_key(|tup| tup.2)
+                    .min_by_key(|col| col.len())
                 {
-                    field = Some(column_names[pos]);
+                    field = Some(*col);
                     text.clear();
                     in_field = false;
                 }
