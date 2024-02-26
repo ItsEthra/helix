@@ -50,6 +50,8 @@ pub struct Menu<T: Item> {
     size: (u16, u16),
     viewport: (u16, u16),
     recalculate: bool,
+
+    move_jk: bool,
 }
 
 impl<T: Item> Menu<T> {
@@ -61,6 +63,7 @@ impl<T: Item> Menu<T> {
         options: Vec<T>,
         editor_data: <T as Item>::Data,
         callback_fn: impl Fn(&mut Editor, Option<&T>, MenuEvent) + 'static,
+        move_jk: bool,
     ) -> Self {
         let matches = (0..options.len() as u32).map(|i| (i, 0)).collect();
         Self {
@@ -74,6 +77,7 @@ impl<T: Item> Menu<T> {
             size: (0, 0),
             viewport: (0, 0),
             recalculate: true,
+            move_jk,
         }
     }
 
@@ -281,6 +285,16 @@ impl<T: Item + 'static> Component for Menu<T> {
             }
             key!(Tab) | key!(Down) | ctrl!('n') => {
                 // arrow down/ctrl-n/tab advances completion choice (including updating the doc)
+                self.move_down();
+                (self.callback_fn)(cx.editor, self.selection(), MenuEvent::Update);
+                return EventResult::Consumed(None);
+            }
+            key!('k') if self.move_jk => {
+                self.move_up();
+                (self.callback_fn)(cx.editor, self.selection(), MenuEvent::Update);
+                return EventResult::Consumed(None);
+            }
+            key!('j') if self.move_jk => {
                 self.move_down();
                 (self.callback_fn)(cx.editor, self.selection(), MenuEvent::Update);
                 return EventResult::Consumed(None);

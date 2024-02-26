@@ -308,7 +308,7 @@ impl Completion {
                     .handlers
                     .trigger_signature_help(SignatureHelpInvoked::Automatic, editor);
             }
-        });
+        }, false);
 
         let popup = Popup::new(Self::ID, menu)
             .with_scrollbar(false)
